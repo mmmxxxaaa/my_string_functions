@@ -5,8 +5,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-/*getline*/
-
 size_t my_strlen(const char* string);
 size_t my_strlen_counter(const char* string);
 //--------------------------------------------------------------------------

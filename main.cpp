@@ -83,27 +83,27 @@ int main()
     printf("%s\n", ptr);
     */
 
-/*
+    /*
     const char *original = "Poltorashka is a cat";
     char *copy = strdup(original);
 
     printf("%s\n", copy);
 
     free(copy); //обязательно почистить память
-*/
+    */
 
-/*
+    /*
     const char string[25] = "Poltorashka is a cat";
     char* result = my_strstr(string, "iвгдд");
     printf("%s", result);
-*/
+    */
 
-/*
+    /*
     char* string = NULL;
     size_t size = 10;
     my_getline(string, size, stdin);
     printf("%s\n", string);
-*/
+    */
 
 
 //========================================================================================

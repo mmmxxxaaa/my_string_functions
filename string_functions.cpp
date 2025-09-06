@@ -164,7 +164,10 @@ char* my_strncat(char* concat_to, char* concat_what, size_t size)
 
 size_t my_puts(const char* string)
 {
-    return my_fputs(string, stdout);
+    size_t result = my_fputs(string, stdout);
+    fputc('\n', stdout);
+    result++;
+    return result;
 }
 
 size_t my_fputs(const char* string, FILE* filestream)
@@ -178,9 +181,6 @@ size_t my_fputs(const char* string, FILE* filestream)
         fputc(*string, filestream);
         string++;
     }
-
-    fputc('\n', stdout);
-    counter++;
 
     return counter;
 }
@@ -309,7 +309,7 @@ ssize_t my_getline(char *string, size_t size, FILE *stream)  //почему в �
             break;
     }
 
-    string[i] = '\0'; //FIXME - закинуть на гитхаб   fseek B1.6
+    string[i] = '\0'; //FIXME -  fseek B1.6  разобраться с сайтиком
 
     return i;
 }
