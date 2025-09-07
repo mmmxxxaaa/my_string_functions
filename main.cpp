@@ -2,6 +2,7 @@
 #include <stddef.h>
 
 #include "string_functions.h"
+#include "logic_functions.h"
 
 int main()
 {
@@ -36,16 +37,16 @@ int main()
     /*
     char str_1[] = "Dor";
     char str_2[] = "Dog";
-    int result = my_strncmp(str_1, str_2, 2);
+    int result = my_strncmp(str_1, str_2, 3);
     printf("%d\n", result);
     */
 
-    /*
-    char str_1[7] = "Dor";
+/*
+    char str_1[10] = "Dor";
     char str_2[] = "Dog";
     char* result = my_strcat(str_1, str_2);
     printf("%s\n", result);
-    */
+*/
 
     /*
     char str_1[7] = "Dor";
@@ -105,7 +106,7 @@ int main()
     printf("%s\n", string);
     */
 
-
+/*
 //========================================================================================
 //Задание от Деда
 //========================================================================================
@@ -162,6 +163,6 @@ int main()
     //string1[5] = 'v';
     //printf("%s\n", string1);   // нельзя менять значения по указателю
 // 4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4-4
-
+*/
     return 0;
 }

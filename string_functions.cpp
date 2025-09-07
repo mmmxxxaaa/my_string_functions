@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include "logic_functions.h"
+
 
 // +
 size_t my_strlen_counter(const char* string)
@@ -67,7 +69,7 @@ char* my_strncpy(char* copy_to, const char* copy_from, size_t size) //возвр
     size_t counter = 0;
     char* saved_pointer = copy_to;
 
-    while ((*copy_from != '\0') && (*copy_to != '\0') && counter < size - 1)
+    while ((*copy_from != '\0') && counter < size - 1)
     {
         *copy_to = *copy_from;
         copy_to++;
@@ -86,7 +88,7 @@ int my_strcmp(const char* string_1, const char* string_2)
     assert(string_1 != NULL);
     assert(string_2 != NULL);
 
-    while (*string_1 && *string_1 == *string_2)
+    while (*string_1 != '\0' && *string_1 == *string_2)
     {
         string_1++;
         string_2++;
@@ -106,7 +108,7 @@ int my_strncmp(const char* string_1, const char* string_2, size_t size)
 
     size_t counter = 0;
 
-    while (*string_1 && *string_1 == *string_2 && counter < size - 1)
+    while (*string_1 != '\0' && *string_1 == *string_2 && counter < size - 1)
     {
         string_1++;
         string_2++;
@@ -137,11 +139,14 @@ char* my_strcat(char* concat_to, const char* concat_what)
         concat_to++;
         concat_what++;
     }
+
+    *concat_to = '\0';      //FIXME почему функция работает без приписывания '\0' (ub, просто везло)
+
     return saved_pointer;
 }
 
 // +
-char* my_strncat(char* concat_to, char* concat_what, size_t size)
+char* my_strncat(char* concat_to, const char* concat_what, size_t size) //FIXME спросить у Деда про const
 {
     assert(concat_to != NULL);
     assert(concat_what != NULL);
@@ -176,7 +181,7 @@ size_t my_fputs(const char* string, FILE* filestream)
 
     size_t counter = my_strlen(string);
 
-    while (*string != '\0')
+    while (*string != '\0' && *string != EOF)
     {
         fputc(*string, filestream);
         string++;
@@ -195,7 +200,8 @@ char* my_fgets(char* string, int size, FILE* fp)
     if (size <= 0)
         return string;
 
-    while (i < size - 1 && ((symbol = getc(fp)) != EOF)) {
+    while (i < size - 1 && ((symbol = getc(fp)) != EOF))
+    {
         string[i++] = symbol;
         if (symbol == '\n')
             break;
@@ -215,6 +221,9 @@ char* my_strchr(const char* string, int symbol)
 
     while(*string != symbol && *string != '\0')
         string++;
+
+    if (symbol == '\0')
+        return (char*) string;
 
     if (*string == '\0')
         return NULL;
@@ -238,7 +247,7 @@ int my_atoi(const char* string)
     if (string[i] == '+' || string[i] == '-')
         i++;        //пропуск знака
 
-    for (; isdigit(string[i]); ++i)
+    for (; is_digit(string[i]); ++i)
         result = 10 * result + (string[i] - '0');
 
     return sign * result;
@@ -250,7 +259,7 @@ char* my_strdup(const char* src)
     assert(src != NULL);
 
     size_t len = strlen(src) + 1;
-    char* s = (char *) calloc(len, sizeof(src));
+    char* s = (char *) calloc(len, sizeof(*src));
     if (s == NULL)
         return NULL;
 
