@@ -37,3 +37,8 @@ bool is_digit(char ch)
 {
     return (ch >= '0' && ch <= '9')? true : false;
 }
+
+bool is_symbol(int symbol)
+{
+    return (symbol >= 0 && symbol <= 255)? true : false;
+}

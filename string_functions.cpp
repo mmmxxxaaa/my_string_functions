@@ -11,6 +11,9 @@
 
 #include "logic_functions.h"
 
+const int first_buffer_size = 256;
+const int grow_buffer_coefficient = 2;
+
 
 // +
 size_t my_strlen_counter(const char* string)
@@ -114,7 +117,7 @@ int my_strncmp(const char* string_1, const char* string_2, size_t size)
         string_2++;
         counter++;
     }
-    if (*string_1 > *string_2)
+    if (*string_1 > *string_2) //разность str2 - str1 //FIXME
         return 1;
     if (*string_1 < *string_2)
         return -1;
@@ -133,14 +136,7 @@ char* my_strcat(char* concat_to, const char* concat_what)
     size_t length = my_strlen(concat_to);
     concat_to += length;
 
-    while (*concat_what != '\0')
-    {
-        *concat_to = *concat_what;
-        concat_to++;
-        concat_what++;
-    }
-
-    *concat_to = '\0';      //FIXME почему функция работает без приписывания '\0' (ub, просто везло)
+    my_strcpy(concat_to, concat_what);
 
     return saved_pointer;
 }
@@ -152,47 +148,50 @@ char* my_strncat(char* concat_to, const char* concat_what, size_t size) //FIXME 
     assert(concat_what != NULL);
 
     char* saved_pointer = concat_to;
-    size_t counter = 0;
+    //size_t counter = 0;
 
     size_t length = my_strlen(concat_to);
-    concat_to += length;
 
-    while (*concat_what != '\0' && counter < size)
-    {
-        *concat_to = *concat_what;
-        concat_to++;
-        concat_what++;
-        counter++;
-    }
+    if (length >= size)     //FIXME еще такую проверку добавил
+        return saved_pointer;
+
+    concat_to += length;
+    my_strncpy(concat_to, concat_what, size - length);
+
     return saved_pointer;
 }
 
-size_t my_puts(const char* string)
+int my_puts(const char* string)
 {
-    size_t result = my_fputs(string, stdout);
+    int result = my_fputs(string, stdout);
+
     fputc('\n', stdout);
     result++;
+
     return result;
 }
 
-size_t my_fputs(const char* string, FILE* filestream)
+int my_fputs(const char* string, FILE* stream)
 {
     assert(string != NULL);
+    assert(stream != NULL);
 
     size_t counter = my_strlen(string);
 
-    while (*string != '\0' && *string != EOF)
+    while (*string != '\0')
     {
-        fputc(*string, filestream);
+        if (fputc(*string, stream) == EOF)
+            return EOF;
         string++;
     }
 
     return counter;
 }
 
-char* my_fgets(char* string, int size, FILE* fp)
+char* my_fgets(char* string, int size, FILE* stream)
 {
     assert(string != NULL);
+    assert(stream != NULL);
 
     int symbol = 0;
     int i = 0;
@@ -200,7 +199,7 @@ char* my_fgets(char* string, int size, FILE* fp)
     if (size <= 0)
         return string;
 
-    while (i < size - 1 && ((symbol = getc(fp)) != EOF))
+    while (i < size - 1 && ((symbol = getc(stream)) != EOF))
     {
         string[i++] = symbol;
         if (symbol == '\n')
@@ -215,20 +214,21 @@ char* my_fgets(char* string, int size, FILE* fp)
 }
 
 // +
-char* my_strchr(const char* string, int symbol)
+char* my_strchr(const char* string, int symbol) // FIXME is_symbol + const cast ptr
 {
     assert(string != NULL);
+    assert(is_symbol(symbol));
 
     while(*string != symbol && *string != '\0')
         string++;
 
     if (symbol == '\0')
-        return (char*) string;
+        return const_kostyl_suka(string);
 
     if (*string == '\0')
         return NULL;
 
-    char* saved_string = (char*) string;
+    char* saved_string = const_kostyl_suka(string);
 
     return saved_string; //избавиться от конст чара
 }
@@ -258,7 +258,7 @@ char* my_strdup(const char* src)
 {
     assert(src != NULL);
 
-    size_t len = strlen(src) + 1;
+    size_t len = my_strlen(src) + 1;
     char* s = (char *) calloc(len, sizeof(*src));
     if (s == NULL)
         return NULL;
@@ -274,7 +274,7 @@ char* my_strstr(const char* search_in, const char* search_what)
     assert(search_what != NULL);
 
     if (*search_what == '\0')
-        return (char*) search_in;
+        return const_kostyl_suka(search_in);
 
     while (*search_in)
     {
@@ -290,7 +290,7 @@ char* my_strstr(const char* search_in, const char* search_what)
             }
 
             if (*starting_what == '\0')
-                return (char*) search_in; //без явного приведения ошибка
+                return const_kostyl_suka(search_in); //без явного приведения ошибка
         }
         search_in++;
     }
@@ -298,27 +298,75 @@ char* my_strstr(const char* search_in, const char* search_what)
     return NULL;
 }
 
-ssize_t my_getline(char *string, size_t size, FILE *stream)  //почему в оригинале size_t *n и **string
+ssize_t my_getline(char** ptr_string, size_t* ptr_size, FILE* stream)  //почему в оригинале size_t *n и **string
 {
-    if (stream == NULL || size == 0)
+    if (ptr_size == NULL || stream == NULL)
         return -1;
 
+    char* buffer = NULL;
+    if  (ptr_string == NULL)
+        buffer = (char*) calloc(first_buffer_size, sizeof(char));
+    else
+        buffer = *ptr_string;
+
+    size_t size = *ptr_size;
+    size_t length = 0;
     int symbol = '\0';
-    size_t i = 0;
 
-    while (i < size - 1)
+    while ((symbol = fgetc(stream)) != EOF)
     {
-        symbol = fgetc(stream);
-        if (symbol == EOF)
-            return -1;
+        if (length == size)
+        {
+            size = size * grow_buffer_coefficient;
+            // buffer = realloc(*ptr_string, size); //ptr_string = realloc(///)
+            char* check_buf = (char*) realloc(buffer, size);
+            if (check_buf == NULL)
+            {
+                *ptr_size = size;
+                *ptr_string = buffer;
+                return -1; // ?
+            }
 
-        string[i++] = symbol;
+            buffer = check_buf;
+
+            if (buffer == NULL)
+                return -1;
+
+            *ptr_string = buffer;  //FIXME
+            *ptr_size = size;
+        }
+
+        buffer[length++] = symbol;
 
         if (symbol == '\n')
             break;
     }
+//шо делать, если сразу был прочитан EOF (-1 вернуть?) да
 
-    string[i] = '\0'; //FIXME -  fseek B1.6  разобраться с сайтиком
+    if (length == size)   //можно ли это засунуть в цикл выше? как-то надо
+    {
+        size++;
+        buffer = (char*) realloc(*ptr_string, size);
 
-    return i;
+        if (buffer == NULL)
+            return -1;
+
+        *ptr_string = buffer;
+        *ptr_size = size;
+    }
+    buffer[length] = '\0';
+
+    return length;     //fseek B1.6  разобраться с сайтиком
+
+    //через мемкопи из получаемого функцией const char возвращать ею char
+}
+
+char* const_kostyl_suka(const char* source) //Вова гений
+{
+    assert(source != NULL);
+
+    char* destination = NULL;
+    memcpy(destination, source, sizeof(char*));
+
+    return destination;
 }

@@ -54,4 +54,6 @@ bool is_finite(float number);
 
 bool is_digit(char ch);
 
+bool is_symbol(int symbol);
+
 #endif // LOGIC_FUNCTIONS_H_

@@ -42,18 +42,18 @@ int main()
     */
 
 /*
-    char str_1[10] = "Dor";
+    char str_1[10] = "Dore\0pen";
     char str_2[] = "Dog";
     char* result = my_strcat(str_1, str_2);
     printf("%s\n", result);
 */
 
-    /*
-    char str_1[7] = "Dor";
-    char str_2[] = "Dog";
+/*
+    char str_1[9] = "Dore\0pen";
+    const char str_2[] = "Dog";
     char* result = my_strncat(str_1, str_2, 2);
     printf("%s\n", result);
-    */
+*/
 
     /*
     char string[] = "dog";
@@ -105,6 +105,14 @@ int main()
     my_getline(string, size, stdin);
     printf("%s\n", string);
     */
+
+    /*
+    const char* string = "Poltorashka";
+    my_puts(string);
+    */
+
+    //const char* string = "Poltorashka";
+
 
 /*
 //========================================================================================
