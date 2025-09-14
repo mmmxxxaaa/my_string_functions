@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 #include "string_functions.h"
 #include "logic_functions.h"
@@ -111,7 +112,14 @@ int main()
     my_puts(string);
     */
 
-    //const char* string = "Poltorashka";
+    size_t size = 10;
+    char* string = NULL;
+    if (my_getline(&string, &size, stdin) != -1)
+        printf("%s", string);
+    else
+        printf("-1");
+
+    free(string);
 
 
 /*

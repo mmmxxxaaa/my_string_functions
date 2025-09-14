@@ -298,42 +298,48 @@ char* my_strstr(const char* search_in, const char* search_what)
     return NULL;
 }
 
-ssize_t my_getline(char** ptr_string, size_t* ptr_size, FILE* stream)  //почему в оригинале size_t *n и **string
+ssize_t my_getline(char** ptr_string, size_t* ptr_size, FILE* stream)
 {
-    if (ptr_size == NULL || stream == NULL)
+    if (ptr_string == NULL || ptr_size == NULL || stream == NULL)
         return -1;
 
-    char* buffer = NULL;
-    if  (ptr_string == NULL)
-        buffer = (char*) calloc(first_buffer_size, sizeof(char));
-    else
-        buffer = *ptr_string;
-
+    char* buffer = *ptr_string;
     size_t size = *ptr_size;
+
+    if  (buffer == NULL)
+    {
+        size = first_buffer_size;
+        buffer = (char*) calloc(size, sizeof(char));
+        if (buffer == NULL)
+            return -1;
+    }
+    else
+    {
+        if (size == 0)
+            return -1;
+    }
+
+
     size_t length = 0;
     int symbol = '\0';
 
     while ((symbol = fgetc(stream)) != EOF)
     {
-        if (length == size)
+        if (length == size - 1)
         {
-            size = size * grow_buffer_coefficient;
+            size_t new_size = size * grow_buffer_coefficient;
             // buffer = realloc(*ptr_string, size); //ptr_string = realloc(///)
-            char* check_buf = (char*) realloc(buffer, size);
+            char* check_buf = (char*) realloc(buffer, new_size);
             if (check_buf == NULL)
             {
                 *ptr_size = size;
                 *ptr_string = buffer;
-                return -1; // ?
+
+                return -1;
             }
 
             buffer = check_buf;
-
-            if (buffer == NULL)
-                return -1;
-
-            *ptr_string = buffer;  //FIXME
-            *ptr_size = size;
+            size = new_size;
         }
 
         buffer[length++] = symbol;
@@ -341,31 +347,40 @@ ssize_t my_getline(char** ptr_string, size_t* ptr_size, FILE* stream)  //поч�
         if (symbol == '\n')
             break;
     }
-//шо делать, если сразу был прочитан EOF (-1 вернуть?) да
 
-    if (length == size)   //можно ли это засунуть в цикл выше? как-то надо
+// Обработка случая, когда ничего не прочитано
+    if (length == 0 && symbol == EOF)
+        return -1;
+
+    if (length == size)
     {
-        size++;
-        buffer = (char*) realloc(*ptr_string, size);
+        size_t new_size = length + 1;
+        char* check_buf = (char*) realloc(buffer, new_size);
+        if (check_buf == NULL)
+        {
+            *ptr_size = size;
+            *ptr_string = buffer;
 
-        if (buffer == NULL)
             return -1;
-
-        *ptr_string = buffer;
-        *ptr_size = size;
+        }
+        buffer = check_buf;
+        size = new_size;
     }
+
+    // Завершаем строку нулем
     buffer[length] = '\0';
 
-    return length;     //fseek B1.6  разобраться с сайтиком
-
-    //через мемкопи из получаемого функцией const char возвращать ею char
+    // Обновляем указатели
+    *ptr_string = buffer;
+    *ptr_size = size;
+    return length;
 }
 
 char* const_kostyl_suka(const char* source) //Вова гений
 {
     assert(source != NULL);
 
-    char* destination = NULL;
+    char* destination = (char*) calloc(1, 8);
     memcpy(destination, source, sizeof(char*));
 
     return destination;
